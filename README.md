@@ -1,7 +1,7 @@
 #Palo Alto Networks Toolbox
 
-This will be a repository of scripts written to handle some functionality within the 
-Palo Alto Networks firewalls.
+This will be a repository of scripts written to handle some checks and other things on
+on the Palo Alto Networks firewalls.  
 
 ##url-check.py
 This script will query the PANDB cloud with data from a flat text file and return the
