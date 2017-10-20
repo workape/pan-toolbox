@@ -10,7 +10,7 @@ requests.packages.urllib3.disable_warnings()
     password as needed to gen the API key on it's own for use.  This was a quick script though used out of a private
     server with cron to pull these.
 
-    - Tighe Schlottog workape<at>gmail<dot>com
+    - Tighe Schlottog tschlottog@paloaltonetworks.com
 '''
 
 
