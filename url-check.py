@@ -29,6 +29,12 @@ def url_query(fw, api_key, urls_in, urls_out, debug):
     with open(urls_in, 'r') as urls_file:
         for url in urls_file:
             test_headers = {'type': 'op', 'key': api_key, 'cmd': '<test><url-info-cloud>' + url + '</url-info-cloud></test>'}
+            if debug:
+                print '***Request to API***'
+                print 'URL: https://%s/api' % fw
+                print 'Parameters:'
+                print test_headers
+                print '***End API Request\n\n'
             url_req = requests.get('https://%s/api' % fw, params=test_headers, verify=False)
             if debug:
                 print '***Response from API***'
