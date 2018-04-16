@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import paramiko
 import sys
-import time
 from datetime import datetime
 import argparse
 
@@ -21,12 +20,8 @@ def parse_args():
     parser.add_argument('-stdout', dest='stdout', action='store_true', help='Output command data to STDOUT')
     parser.set_defaults(stdout=False)
     parser.add_argument('-f', '--file', type=str, help='Output command data to named file')
-    fw_password = input('Enter Remote Firewall Password: ')
+    fw_password = raw_input('Enter Remote Firewall Password: ')
     args = parser.parse_args()
-    # Validate if arguments are correct otherwise display help
-    if (args.cmd==None and args.command_file==None) or args.user==None or args.firewall==None or (args.stdout==False and args.file==None):
-        parser.print_help()
-        exit(1)
     return parser, args, fw_password
 
 
@@ -53,15 +48,15 @@ def setup_conn(fw_ip, username, password):
     :param password: Password used to log into the firewall.
     :return:  Returns the connection handler for use in other functions.
     '''
-    print(fw_ip, username, password)
+    print fw_ip, username, password
     test_conn = paramiko.SSHClient()
     test_conn.load_system_host_keys()
     test_conn.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        print('Connecting to firewall')
-        test_conn.connect(fw_ip, username=username, password=password, look_for_keys=False, timeout=3)
+        print 'Connecting to firewall'
+        test_conn.connect(fw_ip, username=username, password=password)
     except:
-        print('Unable to connect to firewall, please check your settings')
+        print 'Unable to connect to firewall, please check your settings'
         sys.exit(1)
 
     return test_conn  # Paramiko SSH Handler
@@ -82,13 +77,14 @@ def execute_remote_command(ssh_con, cmd):
         pass
     if cmd[-1] != '\n':
         cmd += '\n'
-    ssh_shell.send(bytes(cmd, 'ascii'))
+    ssh_shell.send(cmd)
     prompt_search = ''
     results_data = ''
     while prompt_search != '>':
-        results_data += str(ssh_shell.recv(4096)).replace('\r', '')
+        results_data += ssh_shell.recv(4096).replace('\r', '')
         prompt_search = results_data.strip()[-1]
     return results_data
+
 
 def main():
     cmd_parser, cmd_args, fw_pass = parse_args()
@@ -102,13 +98,13 @@ def main():
         cmds = [ cmd_args.cmd ]
 
     cmd_handler = setup_conn(cmd_args.firewall, cmd_args.user, fw_pass)
+
     for fw_cmd in cmds:
         cmd_data = execute_remote_command(cmd_handler, fw_cmd)
-        print
         if cmd_args.file:
             cmd_out.write(cmd_data)
         if cmd_args.stdout:
-            print(cmd_data)
+            print cmd_data
 
 
 if __name__ == '__main__':
