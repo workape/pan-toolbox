@@ -4,7 +4,6 @@ import requests
 import lxml.etree
 import argparse
 import sys
-import urllib
 requests.packages.urllib3.disable_warnings()
 
 '''
@@ -30,7 +29,7 @@ def url_query(fw, api_key, urls_in, urls_out, debug, cname):
     resp_out = open(urls_out, 'a')
     with open(urls_in, 'r') as urls_file:
         for url in urls_file:
-            test_headers = {'type': 'op', 'key': api_key, 'cmd': '<test><url-info-cloud>' + urllib.quote_plus(str(url)) + '</url-info-cloud></test>'}
+            test_headers = {'type': 'op', 'key': api_key, 'cmd': '<test><url-info-cloud>' + requests.utils.requote_uri(str(url)) + '</url-info-cloud></test>'}
             if debug:
                 print '***Request to API***'
                 print 'URL: https://%s/api' % fw
