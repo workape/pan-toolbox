@@ -21,11 +21,12 @@ def parse_args():
     parser.add_argument('-ui', '--urls_in', type=str, help='Input file containing a list of URLS for querying', required=True)
     parser.add_argument('-uo', '--urls_out', type=str, help='Output file where the URL and category are written in CSV', required=True)
     parser.add_argument('-d', '--debug', type=bool, default=False, help='Enable Debugging for additional Outputs')
+    parser.add_argument('-c', '--cname', type=bool, default=False, help='Enable CNAME/Recursion on domain')
     args = parser.parse_args()
     return parser, args
 
 
-def url_query(fw, api_key, urls_in, urls_out, debug):
+def url_query(fw, api_key, urls_in, urls_out, debug, cname):
     resp_out = open(urls_out, 'a')
     with open(urls_in, 'r') as urls_file:
         for url in urls_file:
@@ -45,19 +46,29 @@ def url_query(fw, api_key, urls_in, urls_out, debug):
                 resp_root = lxml.etree.fromstring(url_req.content)
                 if resp_root.xpath('//result') is not None:
                     for x in resp_root.xpath('//result')[0].text.split():
-                        if debug:
-                            print '***Data in //result xpath: %s' % x
-                        if ',' in x:
-                            y = x.split(',')
-                            print y[0], y[-1]
-                            resp_out.write('%s,%s\n' % (y[0], y[-1]))
+                        if not x.startswith('BM:'):
+                            if cname:
+                                if debug:
+                                    print '***Data in //result xpath: %s' % x
+                                if ',' in x:
+                                    y = x.split(',')
+                                    print y[0], y[-1]
+                                    resp_out.write('%s,%s\n' % (y[0], y[-1]))
+                            else:
+                                if debug:
+                                    print '***Data in //result xpath: %s' % x
+                                if ',' in x:
+                                    y = x.split(',')
+                                    print url, y[-1]
+                                    resp_out.write('%s,%s\n' % (url, y[-1]))
+                                break
             else:
                 sys.exit('API Connection to %s returned %s' % (fw, url_req.status_code))
 
 
 def control():
     url_parser, url_args = parse_args()
-    url_query(url_args.fw, url_args.api_key, url_args.urls_in, url_args.urls_out, url_args.debug)
+    url_query(url_args.fw, url_args.api_key, url_args.urls_in, url_args.urls_out, url_args.debug, url_args.cname)
 
 
 if __name__ == '__main__':
