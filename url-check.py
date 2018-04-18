@@ -29,40 +29,43 @@ def url_query(fw, api_key, urls_in, urls_out, debug, cname):
     resp_out = open(urls_out, 'a')
     with open(urls_in, 'r') as urls_file:
         for url in urls_file:
-            test_headers = {'type': 'op', 'key': api_key, 'cmd': '<test><url-info-cloud>' + requests.utils.requote_uri(str(url)) + '</url-info-cloud></test>'}
-            if debug:
-                print '***Request to API***'
-                print 'URL: https://%s/api' % fw
-                print 'Parameters:'
-                print test_headers
-                print '***End API Request\n\n'
-            url_req = requests.get('https://%s/api' % fw, params=test_headers, verify=False)
-            if debug:
-                print '***Response from API***'
-                print url_req.content
-                print '***End API Response\n\n'
-            if url_req.status_code is requests.codes.ok:
-                resp_root = lxml.etree.fromstring(url_req.content)
-                if resp_root.xpath('//result') is not None:
-                    for x in resp_root.xpath('//result')[0].text.split():
-                        if not x.startswith('BM:'):
-                            if cname:
-                                if debug:
-                                    print '***Data in //result xpath: %s' % x
-                                if ',' in x:
-                                    y = x.split(',')
-                                    print y[0], y[-1]
-                                    resp_out.write('%s,%s\n' % (y[0], y[-1]))
-                            else:
-                                if debug:
-                                    print '***Data in //result xpath: %s' % x
-                                if ',' in x:
-                                    y = x.split(',')
-                                    print url, y[-1]
-                                    resp_out.write('%s,%s\n' % (url, y[-1]))
-                                break
-            else:
-                sys.exit('API Connection to %s returned %s' % (fw, url_req.status_code))
+            if url.strip() != '':
+                test_headers = {'type': 'op', 'key': api_key, 'cmd': '<test><url-info-cloud>' + requests.utils.requote_uri(str(url.strip())) + '</url-info-cloud></test>'}
+                if debug:
+                    print '***Request to API***'
+                    print 'URL: https://%s/api' % fw
+                    print 'Parameters:'
+                    print test_headers
+                    print '***End API Request\n\n'
+                url_req = requests.get('https://%s/api' % fw, params=test_headers, verify=False)
+                if debug:
+                    print '***Response from API***'
+                    print url_req.content
+                    print '***End API Response\n\n'
+                if url_req.status_code is requests.codes.ok:
+                    resp_root = lxml.etree.fromstring(url_req.content)
+                    if resp_root.xpath('//result') is not None:            
+                        for x in resp_root.xpath('//result')[0].text.split():
+                            if not x.startswith('BM:'):
+                                if cname:
+                                    if debug:
+                                        print '***Data in //result xpath: %s' % x
+                                    if ',' in x:
+                                        y = x.split(',')
+                                        print y[0], y[-1]
+                                        resp_out.write('%s,%s\n' % (y[0], y[-1]))
+                                else:
+                                    if debug:
+                                        print '***Data in //result xpath: %s' % x
+                                    if ',' in x:
+                                        y = x.split(',')
+                                        print url, y[-1]
+                                        resp_out.write('%s,%s\n' % (url.strip(), y[-1]))
+                                    break
+                        else:
+                            print 'Caught an error '
+                else:
+                    sys.exit('API Connection to %s returned %s' % (fw, url_req.status_code))
 
 
 def control():
