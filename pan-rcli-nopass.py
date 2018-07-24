@@ -6,7 +6,6 @@ import argparse
 
 __author__ = 'Tighe Schlottog || workape<at>gmail<dot>com'
 
-
 def parse_args():
     '''
     This function will parse the command line arguments passed in via ARGV.
@@ -23,6 +22,7 @@ def parse_args():
     parser.set_defaults(stdout=False, debug=False)
     parser.add_argument('-f', '--file', type=str, help='Output command data to named file')
     args = parser.parse_args()
+
     return parser, args
 
 
@@ -104,13 +104,14 @@ def main():
         print 'Successfully set up SSH connection and received connection handler back'
 
     for fw_cmd in cmds:
-        if cmd_args.debug:
-            print 'Executing command "%s" on remote firewall' % fw_cmd
-        cmd_data = execute_remote_command(cmd_handler, fw_cmd)
-        if cmd_args.file:
-            cmd_out.write(cmd_data)
-        if cmd_args.stdout:
-            print cmd_data
+        if len(fw_cmd) > 0:
+            if cmd_args.debug:
+                print 'Executing command "%s" on remote firewall' % fw_cmd
+            cmd_data = execute_remote_command(cmd_handler, fw_cmd)
+            if cmd_args.file:
+                cmd_out.write(cmd_data)
+            if cmd_args.stdout:
+                print cmd_data
 
 
 if __name__ == '__main__':
