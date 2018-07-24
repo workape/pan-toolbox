@@ -66,6 +66,10 @@ def setup_conn(fw_ip, username, password):
 def execute_remote_command(ssh_con, cmd):
     '''
     This function will invoke a Paramiko shell and execute commands in a remote manner.
+
+    It will search for two ending prompt conditions the '>' which is the standard prompt and the ':'
+    which is the prompt used for passwords.
+
     :param ssh_con: This is the Paramiko SSH connection handler which is handed into the system.
     :param cmd: This is the command which will be executed in the Paramiko SSH Shell
     :return: It will return a string of the data that is pulled back from the results of the command.
@@ -81,7 +85,7 @@ def execute_remote_command(ssh_con, cmd):
     ssh_shell.send(cmd)
     prompt_search = ''
     results_data = ''
-    while prompt_search != '>':
+    while prompt_search not in ['>', ':']:
         results_data += ssh_shell.recv(4096).replace('\r', '')
         prompt_search = results_data.strip()[-1]
     return results_data
