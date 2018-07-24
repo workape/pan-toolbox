@@ -19,7 +19,8 @@ def parse_args():
     parser.add_argument('-cmd', type=str, help='Remote Command to be run surrounded by double quotes.  For example "show system info".')
     parser.add_argument('-cf', '--command_file', type=str, help='Read commands to be executed remotely from a defined file')
     parser.add_argument('-stdout', dest='stdout', action='store_true', help='Output command data to STDOUT')
-    parser.set_defaults(stdout=False)
+    parser.add_argument('-debug', dest='debug', action='store_true', help='Enable additional debugging')
+    parser.set_defaults(stdout=False, debug=False)
     parser.add_argument('-f', '--file', type=str, help='Output command data to named file')
     args = parser.parse_args()
     return parser, args
@@ -96,10 +97,15 @@ def main():
         cmds = parse_command_file(cmd_args.command_file)
     else:
         cmds = [ cmd_args.cmd ]
-
+    if cmd_args.debug:
+        print 'Setting up SSH connection'
     cmd_handler = setup_conn(cmd_args.firewall, cmd_args.user, cmd_args.password)
+    if cmd_args.debug:
+        print 'Successfully set up SSH connection and received connection handler back'
 
     for fw_cmd in cmds:
+        if cmd_args.debug:
+            print 'Executing command "%s" on remote firewall' % fw_cmd
         cmd_data = execute_remote_command(cmd_handler, fw_cmd)
         if cmd_args.file:
             cmd_out.write(cmd_data)
