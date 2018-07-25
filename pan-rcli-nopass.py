@@ -63,7 +63,7 @@ def setup_conn(fw_ip, username, password):
     return test_conn  # Paramiko SSH Handler
 
 
-def execute_remote_command(ssh_con, cmd):
+def execute_remote_command(ssh_con, cmds, cmd_args):
     '''
     This function will invoke a Paramiko shell and execute commands in a remote manner.
 
@@ -72,24 +72,35 @@ def execute_remote_command(ssh_con, cmd):
 
     :param ssh_con: This is the Paramiko SSH connection handler which is handed into the system.
     :param cmd: This is the command which will be executed in the Paramiko SSH Shell
+    :param cmd_args: These are the CLI arguments to cehck for debugging, file destination, etc.
     :return: It will return a string of the data that is pulled back from the results of the command.
     '''
+    if cmd_args.file:
+        cmd_out = open(cmd_args.file, 'a+')
     ssh_shell = ssh_con.invoke_shell()
     while not ssh_shell.recv_ready():
         pass
     ssh_shell.send('set cli pager off\n')
     while not ssh_shell.recv_ready():
         pass
-    if cmd[-1] != '\n':
-        cmd += '\n'
-    ssh_shell.send(cmd)
-    prompt_search = ''
-    results_data = ''
-    while prompt_search not in ['>', ':']:
-        results_data += ssh_shell.recv(4096).replace('\r', '')
-        prompt_search = results_data.strip()[-1]
-    return results_data
-
+    for cmd in cmds:
+        if len(cmd) > 0:
+            if cmd[-1] != '\n':
+                cmd += '\n'
+            if cmd_args.debug:
+                print 'Sending "%s" to remote firewall' % cmd
+            ssh_shell.send(cmd)
+            prompt_search = ''
+            results_data = ''
+            while prompt_search not in ['>', ':']:
+                results_data += ssh_shell.recv(4096).replace('\r', '')
+                prompt_search = results_data.strip()[-1]
+            if cmd_args.file:
+                cmd_out.write(results_data)
+            if cmd_args.stdout:
+                print results_data
+    if cmd_args.debug:
+        print 'All commands executed'
 
 def main():
     cmd_parser, cmd_args = parse_args()
@@ -97,6 +108,7 @@ def main():
     if cmd_args.file:
         cmd_out = open(cmd_args.file, 'a+')
         cmd_out.write('---------> %s <---------\n' % datetime.now().strftime('%Y/%m/%d@%H:%M:%S'))
+        cmd_out.close()
     if cmd_args.command_file:
         cmds = parse_command_file(cmd_args.command_file)
     else:
@@ -107,15 +119,7 @@ def main():
     if cmd_args.debug:
         print 'Successfully set up SSH connection and received connection handler back'
 
-    for fw_cmd in cmds:
-        if len(fw_cmd) > 0:
-            if cmd_args.debug:
-                print 'Executing command "%s" on remote firewall' % fw_cmd
-            cmd_data = execute_remote_command(cmd_handler, fw_cmd)
-            if cmd_args.file:
-                cmd_out.write(cmd_data)
-            if cmd_args.stdout:
-                print cmd_data
+    execute_report_commend(cmd_handler, cmds, cmd_args)
 
 
 if __name__ == '__main__':
