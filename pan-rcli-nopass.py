@@ -119,7 +119,7 @@ def main():
     if cmd_args.debug:
         print 'Successfully set up SSH connection and received connection handler back'
 
-    execute_report_commend(cmd_handler, cmds, cmd_args)
+    execute_report_command(cmd_handler, cmds, cmd_args)
 
 
 if __name__ == '__main__':
