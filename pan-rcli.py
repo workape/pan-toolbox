@@ -4,6 +4,7 @@ import sys
 import time
 from datetime import datetime
 import argparse
+import pandevice
 
 __author__ = 'Tighe Schlottog || workape<at>gmail<dot>com'
 

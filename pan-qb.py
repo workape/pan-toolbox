@@ -2,7 +2,6 @@
 
 import requests
 import argparse
-requests.packages.urllib3.disable_warnings()
 
 
 '''
